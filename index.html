@@ -1,0 +1,62 @@
+<html>
+<head>
+    <title></title>
+    <link href="style.css" rel="stylesheet">
+    <link href="materialize/css/materialize.css" rel="stylesheet">
+</head>
+<body>
+<div class="first-container">
+
+    <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue-only">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="info"></div>
+
+
+    <div class="progress blue lighten-4" id="progress-bar">
+        <div class="determinate blue accent-2"></div>
+    </div>
+
+
+    <div id="buttons-block">
+        <a class="waves-effect waves-light btn blue blue accent-2" id="worked">Tree</a>
+        <a class="waves-effect waves-light btn blue blue accent-2" id="kmeans">KMeans</a>
+        <a class="waves-effect waves-light btn blue blue accent-2" id="closest">Closest</a>
+    </div>
+
+</div>
+
+<div class="main-container">
+    <div id="result-block">
+        <p id="result-text"></p>
+        <div class="margin-sm">
+            <a class="waves-effect waves-light btn blue blue accent-2" id="return">Return</a>
+            <a class="waves-effect waves-light btn blue blue accent-2" id="next">Next</a>
+        </div>
+    </div>
+
+    <canvas id="canvas"></canvas>
+</div>
+
+<div id="result" style="width: 1500px; height: 1500px"></div>
+
+<script src="jquery-3.1.1.min.js"></script>
+<script src="materialize/js/materialize.js"></script>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="util.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="actions.js"></script>
+</body>
+</html>
