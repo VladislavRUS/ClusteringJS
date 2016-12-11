@@ -57,16 +57,17 @@ function componentsContainEmptyCluster(components) {
 
 function clusterLoop(data, volumes, stations, params) {
     var distances = [];
+    var defaultNumberOfClusters = 60;
     if (params.clustersNumber == "") {
-        for (var i = 2; i < 30; i++) {
+        for (var i = 2; i < defaultNumberOfClusters; i++) {
             var components = getComponentsFromKMeans(i, data, JSON.parse(JSON.stringify(volumes)));
             if (!componentsContainEmptyCluster(components)) {
                 var distanceResult = Util.countComponentsDistance(components, JSON.parse(JSON.stringify(volumes)), stations, params);
                 distances.push({distance: distanceResult.distance, clusters: i, result: distanceResult});
-                sendMessage('kmeans counted', 'Посчитано K:' + i + ' /30');
+                sendMessage('kmeans counted', 'Посчитано K:' + i + ' /' + defaultNumberOfClusters);
 
             } else {
-                sendMessage('kmeans counted', 'Пустой кластер! Посчитано K:' + i + ' /30');
+                sendMessage('kmeans counted', 'Пустой кластер! K:' + i + ' /' + defaultNumberOfClusters);
             }
         }
 
@@ -79,11 +80,11 @@ function clusterLoop(data, volumes, stations, params) {
         var components = getComponentsFromKMeans(clustersNumber, data, JSON.parse(JSON.stringify(volumes)));
         if (!componentsContainEmptyCluster(components)) {
             var distanceResult = Util.countComponentsDistance(components, JSON.parse(JSON.stringify(volumes)), stations, params);
-            distances.push({distance: distanceResult.distance, clusters: clustersNumber});
-            sendMessage('kmeans counted', 'Посчитано K:' + i + ' /30');
+            distances.push({distance: distanceResult.distance, clusters: clustersNumber, result: distanceResult});
+            sendMessage('kmeans counted', 'Посчитано K:' + clustersNumber + ' /30');
 
         } else {
-            sendMessage('kmeans counted', 'Пустой кластер! Посчитано K:' + i + ' /30');
+            sendMessage('kmeans counted', 'Пустой кластер! K:' + clustersNumber + ' /30');
         }
     }
 

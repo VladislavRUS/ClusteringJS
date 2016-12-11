@@ -32,7 +32,7 @@ function startClosest(volumes, stations) {
     }
 
     sendMessage('shortest', JSON.stringify(arr));
-    sendMessage('Result', 'Среднее расстояние: ' + (Util.countComponentsDistance(arr, volumes, stations)) + ', количество кластеров: ' + arr.length);
+    sendMessage('Result', 'Среднее расстояние: ' + (Util.countComponentsDistance(arr, volumes, stations)).distance + ', количество кластеров: ' + arr.length);
     sendMessage('stations', JSON.stringify(stations));
 }
 

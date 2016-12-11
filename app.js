@@ -14,7 +14,7 @@ function startTree() {
     worker.postMessage({
         volumes: JSON.parse(JSON.stringify(volumes)),
         stations: JSON.parse(JSON.stringify(stations)),
-        params : getCostAndClustersNumber()
+        params: getCostAndClustersNumber()
     });
 }
 
@@ -23,7 +23,7 @@ function startKMeans() {
     kMeansWorker.postMessage({
         volumes: JSON.parse(JSON.stringify(volumes)),
         stations: JSON.parse(JSON.stringify(stations)),
-        params : getCostAndClustersNumber()
+        params: getCostAndClustersNumber()
     });
 }
 
@@ -32,7 +32,7 @@ function startClosest() {
     closestWorker.postMessage({
         volumes: JSON.parse(JSON.stringify(volumes)),
         stations: JSON.parse(JSON.stringify(stations)),
-        params : getCostAndClustersNumber()
+        params: getCostAndClustersNumber()
     });
 }
 
@@ -41,8 +41,10 @@ function clearCanvas() {
 }
 
 var info = document.getElementById('info');
+var mapStations = [];
+var map = null, geoCollection = null;
 
-[worker, kMeansWorker, closestWorker].forEach(function(w) {
+[worker, kMeansWorker, closestWorker].forEach(function (w) {
     w.onmessage = processEvent;
 });
 
@@ -50,6 +52,7 @@ function showCanvas() {
     var res = $('#info').text();
     $('#result-block').show();
     $('.first-container').hide();
+    $('#map').hide();
     $('.main-container').show();
     $('#result-text').text(res);
     $('#canvas').show();
@@ -65,10 +68,47 @@ function hideCanvas() {
     $('#progress-bar').hide();
     $('#canvas').hide();
     $('#chart').hide();
+    $('#map').hide();
+}
+
+function showMap() {
+
+    $('#map').show();
+
+    if (map == null) {
+        map = new ymaps.Map('map', {
+            center: [53.11, 50.07],
+            zoom: 5
+        });
+    }
+
+    if (geoCollection == null) {
+        geoCollection = new ymaps.GeoObjectCollection({}, {
+            preset: 'twirl#blueIcon', //все метки красные
+            draggable: false // и их можно перемещать
+        });
+
+        map.geoObjects.add(geoCollection);
+    }
+
+    geoCollection.removeAll();
+
+    for (var i = 0; i < mapStations.length; i++) {
+        var station = mapStations[i];
+        var lat = +parseFloat(station.latitude.replace(',', '.')).toFixed(2);
+        var lon = +parseFloat(station.longitude.replace(',', '.')).toFixed(2);
+
+        var myPlacemark = new ymaps.Placemark([lat, lon], {
+            balloonContent: station.name
+        });
+
+        geoCollection.add(myPlacemark);
+    }
+
+    mapStations.length = 0;
 }
 
 function processEvent(event) {
-
     switch (event.data.msg) {
         case 'tree':
         case 'shortest':
@@ -81,15 +121,17 @@ function processEvent(event) {
 
                 var station = components[i].station;
                 cnt++;
-                drawRing(ctx, station, { color: 'orange', radius: 8});
-                drawText(ctx, station, station.name, { textShiftX: 20 });
+                drawRing(ctx, station, {color: 'orange', radius: 8});
+                drawText(ctx, station, station.name, {textShiftX: 20});
+
+                mapStations.push(station);
 
                 var points = components[i].points;
 
                 var randomColor = getRandomColor();
 
-                points.forEach(function(p) {
-                    drawCircle(ctx, p, { color: randomColor, radius: 5 });
+                points.forEach(function (p) {
+                    drawCircle(ctx, p, {color: randomColor, radius: 5});
                     drawLine(ctx, p, station);
                 });
             }
@@ -119,8 +161,8 @@ function processEvent(event) {
                 inCluster.y.push(distances[i].result.averageInCluster)
             }
             var layout = {
-                xaxis: { title: 'Количество кластеров'},
-                yaxis: { title: 'Расстояние'},
+                xaxis: {title: 'Количество кластеров'},
+                yaxis: {title: 'Расстояние'},
                 title: 'Исходные данные'
             };
 
@@ -135,11 +177,11 @@ function processEvent(event) {
         default: {
             info.innerHTML = event.data.text;
             if (event.data.msg == 'to') {
-                var percent = (event.data.last - event.data.first)*50/event.data.last;
+                var percent = (event.data.last - event.data.first) * 50 / event.data.last;
                 $('.determinate').width(percent + '%');
             }
             else if (event.data.msg == 'distance') {
-                var percent = ((event.data.first)*50/event.data.last) + 50;
+                var percent = ((event.data.first) * 50 / event.data.last) + 50;
                 $('.determinate').width(percent + '%');
             }
             else if (event.data.msg == 'Result') {
@@ -206,7 +248,7 @@ function drawText(ctx, point, text, params) {
 function getRandomColor() {
     var letters = '0123456789ABCDEF';
     var color = '#';
-    for (var i = 0; i < 6; i++ ) {
+    for (var i = 0; i < 6; i++) {
         color += letters[Math.floor(Math.random() * 16)];
     }
     return color;

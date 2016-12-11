@@ -41,4 +41,7 @@ $(function() {
         hideCanvas();
     });
 
+    $('#mapBtn').click(function() {
+        showMap();
+    })
 });
