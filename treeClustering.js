@@ -116,7 +116,7 @@ function work(volumes, stations, params) {
             distances.push({distance: distanceResult.distance, clusters: i, result: distanceResult});
         }
     } else {
-        var clustersNumber = Util.getNumber(params.clustersNumber);
+        var clustersNumber = Util.getNumber(params.clustersNumber) - 1;
         var matrixCopy = JSON.parse(JSON.stringify(matrix));
         removeLongestEdge(clustersNumber, matrixCopy);
         var distanceResult = countTreeDistance(matrixCopy, volumes, stations, params);
@@ -142,7 +142,7 @@ function work(volumes, stations, params) {
     }
 
     sendMessage('tree', JSON.stringify(components));
-    sendMessage('Result', 'Среднее расстояние: ' + minDistance.distance + ', количество кластеров: ' + minDistance.clusters);
+    sendMessage('Result', 'Среднее расстояние: ' + minDistance.distance + ', количество кластеров: ' + (parseInt(minDistance.clusters)+1));
 }
 
 
