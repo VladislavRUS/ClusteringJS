@@ -1,7 +1,7 @@
 importScripts('util.js');
 
-onmessage = function(event) {
-    work(event.data.volumes, event.data.stations)
+onmessage = function (event) {
+    work(event.data.volumes, event.data.stations, event.data.params)
 };
 
 function dfs(idx, used, matrix, arr) {
@@ -87,7 +87,7 @@ function createTree(points) {
         from.push(to[toIdx]);
         to.splice(toIdx, 1);
 
-        sendMessage('to', 'Vertexes to: ' + to.length + '/' + points.length, to.length, points.length);
+        sendMessage('to', 'Вершин осталось: ' + to.length + '/' + points.length, to.length, points.length);
     }
 
     return matrix;
@@ -97,22 +97,35 @@ function containsEdge(from, to, edges) {
     return edges[from][to] || edges[to][from];
 }
 
-function work(volumes, stations) {
+function work(volumes, stations, params) {
     Util.prepareData(volumes);
     Util.prepareData(stations);
-
     sendMessage('stations', JSON.stringify(stations));
 
     var matrix = createTree(volumes);
 
     var distances = [];
-    for (var i = 0; i < 30; i++) {
+
+    if (params.clustersNumber == "") {
+        for (var i = 0; i < 30; i++) {
+            var matrixCopy = JSON.parse(JSON.stringify(matrix));
+            removeLongestEdge(i, matrixCopy);
+            var distanceResult = countTreeDistance(matrixCopy, volumes, stations, params);
+            console.log('i: ' + i + ', distance: ' + distanceResult.distance);
+            sendMessage('distance', 'Проверено ребер: ' + i + '/30', i, 30);
+            distances.push({distance: distanceResult.distance, clusters: i, result: distanceResult});
+        }
+    } else {
+        var clustersNumber = Util.getNumber(params.clustersNumber);
         var matrixCopy = JSON.parse(JSON.stringify(matrix));
-        removeLongestEdge(i, matrixCopy);
-        var distance = countTreeDistance(matrixCopy, volumes, stations);
-        sendMessage('distance', 'Removed edges: ' + i + '/30', i, 30);
-        distances.push({distance: distance, clusters: i});
+        removeLongestEdge(clustersNumber, matrixCopy);
+        var distanceResult = countTreeDistance(matrixCopy, volumes, stations, params);
+        console.log('i: ' + clustersNumber + ', distance: ' + distanceResult.distance);
+        sendMessage('distance', 'Проверено ребер: ' + clustersNumber + '/30', clustersNumber, 30);
+        distances.push({distance: distanceResult.distance, clusters: clustersNumber, result: distanceResult});
     }
+
+    sendMessage('chart', JSON.stringify(distances));
 
     var minDistance = Util.findMinDistance(distances);
 
@@ -129,14 +142,14 @@ function work(volumes, stations) {
     }
 
     sendMessage('tree', JSON.stringify(components));
-    sendMessage('_result', 'Min distance is: ' + minDistance.distance + ' with amount of clusters: ' + minDistance.clusters);
+    sendMessage('Result', 'Среднее расстояние: ' + minDistance.distance + ', количество кластеров: ' + minDistance.clusters);
 }
 
 
-function countTreeDistance(matrix, volumes, stations) {
+function countTreeDistance(matrix, volumes, stations, params) {
     var components = findComponents(matrix, volumes);
 
-    return Util.countComponentsDistance(components, volumes, stations);
+    return Util.countComponentsDistance(components, volumes, stations, params);
 }
 
 function removeLongestEdge(edgesToDelete, edges) {

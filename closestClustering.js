@@ -7,7 +7,6 @@ onmessage = function(event) {
 function startClosest(volumes, stations) {
     Util.prepareData(volumes);
     Util.prepareData(stations);
-    sendMessage('stations', JSON.stringify(stations));
 
     var components = {};
     for (var i = 0; i < volumes.length; i++) {
@@ -33,7 +32,8 @@ function startClosest(volumes, stations) {
     }
 
     sendMessage('shortest', JSON.stringify(arr));
-    sendMessage('_result', 'Min distance is: ' + (Util.countComponentsDistance(arr, volumes, stations)) + ' with amount of clusters: ' + arr.length);
+    sendMessage('Result', 'Среднее расстояние: ' + (Util.countComponentsDistance(arr, volumes, stations)) + ', количество кластеров: ' + arr.length);
+    sendMessage('stations', JSON.stringify(stations));
 }
 
 function sendMessage(msg, text) {

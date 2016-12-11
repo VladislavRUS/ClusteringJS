@@ -1,5 +1,5 @@
 canvas {
-    border: 1px solid black;
+    border: 1px solid transparent;
 }
 .first-container {
     width: 100%;
@@ -20,7 +20,7 @@ canvas {
     display: none;
 }
 .determinate {
-    width: 0%;
+    width: 0;
 }
 #progress-bar{
     width: 100%;
@@ -33,4 +33,23 @@ canvas {
 .margin-sm {
     margin: 20px;
 }
-#info {width: 100%; text-align: center;}
+#info {
+    position: absolute;
+    left: 100px;
+    top: 50px;
+    font-size: 30px;
+}
+
+#optimizations {
+    position: relative;
+    left: 20px;
+    margin-top: 50px;
+}
+
+#result-block {
+    position: relative;
+    margin: auto;
+    top: 10px;
+    left: 30px;
+    font-size: 20px;
+}

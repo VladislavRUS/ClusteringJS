@@ -30,9 +30,17 @@
 
 
     <div id="buttons-block">
-        <a class="waves-effect waves-light btn blue blue accent-2" id="worked">Tree</a>
+        <a class="waves-effect waves-light btn blue blue accent-2" id="worked">Минимальное дерево</a>
         <a class="waves-effect waves-light btn blue blue accent-2" id="kmeans">KMeans</a>
-        <a class="waves-effect waves-light btn blue blue accent-2" id="closest">Closest</a>
+        <a class="waves-effect waves-light btn blue blue accent-2" id="closest">Ближайшие</a>
+    </div>
+
+    <div id="optimizations">
+        <input id="clustersNumber" type="text" placeholder="Задайте количество кластеров*">
+        <input id="stationCost" type="text" placeholder="Задайте стоимость одного КП**">
+
+        <p>*если не задан параметр К, алгоритм автоматически подберет лучшее количество</p>
+        <p>**по умолчанию стоимость КП равна 0</p>
     </div>
 
 </div>
@@ -41,21 +49,22 @@
     <div id="result-block">
         <p id="result-text"></p>
         <div class="margin-sm">
-            <a class="waves-effect waves-light btn blue blue accent-2" id="return">Return</a>
-            <a class="waves-effect waves-light btn blue blue accent-2" id="next">Next</a>
+            <a class="waves-effect waves-light btn blue blue accent-2" id="return">Назад</a>
+            <a class="waves-effect waves-light btn blue blue accent-2" id="next">Посмотреть на карте</a>
         </div>
     </div>
 
     <canvas id="canvas"></canvas>
+    <div id="chart"></div>
 </div>
-
-<div id="result" style="width: 1500px; height: 1500px"></div>
+<!--
+<div id="result" style="width: 1500px; height: 1500px"></div>-->
 
 <script src="jquery-3.1.1.min.js"></script>
 <script src="materialize/js/materialize.js"></script>
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<script src="util.js"></script>
 <script src="data.js"></script>
+<script src="util.js"></script>
 <script src="app.js"></script>
 <script src="actions.js"></script>
 </body>

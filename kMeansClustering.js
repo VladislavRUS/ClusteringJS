@@ -1,10 +1,10 @@
 importScripts('util.js');
 
 onmessage = function(event) {
-    startKMeans(event.data.volumes, event.data.stations);
+    startKMeans(event.data.volumes, event.data.stations, event.data.params);
 };
 
-function startKMeans(volumes, stations) {
+function startKMeans(volumes, stations, params) {
     Util.prepareData(volumes);
     Util.prepareData(stations);
     sendMessage('stations', JSON.stringify(stations));
@@ -14,9 +14,9 @@ function startKMeans(volumes, stations) {
         data[i] = [volumes[i].x, volumes[i].y];
     }
 
-    var bestClusterizing = clusterLoop(data, volumes, stations);
+    var bestClusterizing = clusterLoop(data, volumes, stations, params);
     sendMessage('kmeans', JSON.stringify(bestClusterizing.clusters));
-    sendMessage('_result', 'Min distance is: ' + bestClusterizing.distance + ' with amount of clusters: ' + bestClusterizing.clusters.length);
+    sendMessage('Result', 'Среднее расстояние: ' + bestClusterizing.distance + ', количество кластеров: ' + bestClusterizing.clusters.length);
 }
 
 function getComponentsFromKMeans(k, data, volumes) {
@@ -55,22 +55,44 @@ function componentsContainEmptyCluster(components) {
     return false;
 }
 
-function clusterLoop(data, volumes, stations) {
+function clusterLoop(data, volumes, stations, params) {
     var distances = [];
-    for (var i = 2; i < 30; i++) {
-        var components = getComponentsFromKMeans(i, data, JSON.parse(JSON.stringify(volumes)));
+    if (params.clustersNumber == "") {
+        for (var i = 2; i < 30; i++) {
+            var components = getComponentsFromKMeans(i, data, JSON.parse(JSON.stringify(volumes)));
+            if (!componentsContainEmptyCluster(components)) {
+                var distanceResult = Util.countComponentsDistance(components, JSON.parse(JSON.stringify(volumes)), stations, params);
+                distances.push({distance: distanceResult.distance, clusters: i, result: distanceResult});
+                sendMessage('kmeans counted', 'Посчитано K:' + i + ' /30');
+
+            } else {
+                sendMessage('kmeans counted', 'Пустой кластер! Посчитано K:' + i + ' /30');
+            }
+        }
+
+    } else {
+        var clustersNumber = Util.getNumber(params.clustersNumber);
+        if (clustersNumber < 2) {
+            sendMessage('Error', 'Ошибка! Количество кластеров должно быть больше 1! Перезагрузите страницу...');
+            return;
+        }
+        var components = getComponentsFromKMeans(clustersNumber, data, JSON.parse(JSON.stringify(volumes)));
         if (!componentsContainEmptyCluster(components)) {
-            var distance = Util.countComponentsDistance(components, JSON.parse(JSON.stringify(volumes)), stations);
-            distances.push({distance: distance, clusters: i});
-            sendMessage('kmeans counted', 'Counted K:' + i + ' /30');
+            var distanceResult = Util.countComponentsDistance(components, JSON.parse(JSON.stringify(volumes)), stations, params);
+            distances.push({distance: distanceResult.distance, clusters: clustersNumber});
+            sendMessage('kmeans counted', 'Посчитано K:' + i + ' /30');
 
         } else {
-            sendMessage('kmeans counted', 'Contains empty cluster! Counted K:' + i + ' /30');
+            sendMessage('kmeans counted', 'Пустой кластер! Посчитано K:' + i + ' /30');
         }
     }
+
+    sendMessage('chart', JSON.stringify(distances));
+
     var minDistance = Util.findMinDistance(distances);
 
     var components = getComponentsFromKMeans(minDistance.clusters, data, JSON.parse(JSON.stringify(volumes)));
+    console.log(components.length);
     for (var i = 0; i < components.length; i++) {
         var component = components[i];
         component.idx = i;

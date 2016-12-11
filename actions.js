@@ -4,19 +4,21 @@ $(function() {
         $('#buttons-block').slideToggle();
 
     }
-    setTimeout(hidePreloader, 200);
+    setTimeout(hidePreloader, 100);
 
     $('#worked').click(function() {
         $('#buttons-block').hide();
+        $('#optimizations').hide();
         $('.determinate').width('0%');
         $('#info').show();
 
         $('#progress-bar').show();
-        startWorker();
+        startTree();
     });
 
     $('#kmeans').click(function() {
         $('#buttons-block').hide();
+        $('#optimizations').hide();
         $('.determinate').width('0%');
         $('#info').show();
 
@@ -26,6 +28,7 @@ $(function() {
 
     $('#closest').click(function() {
         $('#buttons-block').hide();
+        $('#optimizations').hide();
         $('.determinate').width('0%');
         $('#info').show();
 
@@ -38,4 +41,4 @@ $(function() {
         hideCanvas();
     });
 
-})
+});

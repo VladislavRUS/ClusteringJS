@@ -2,19 +2,42 @@ var worker = new Worker('treeClustering.js');
 var kMeansWorker = new Worker('kMeansClustering.js');
 var closestWorker = new Worker('closestClustering.js');
 
-function startWorker() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    worker.postMessage({volumes: JSON.parse(JSON.stringify(volumes)), stations: JSON.parse(JSON.stringify(stations))});
+function getCostAndClustersNumber() {
+    return {
+        clustersNumber: document.getElementById('clustersNumber').value,
+        stationCost: document.getElementById('stationCost').value
+    }
+}
+
+function startTree() {
+    clearCanvas();
+    worker.postMessage({
+        volumes: JSON.parse(JSON.stringify(volumes)),
+        stations: JSON.parse(JSON.stringify(stations)),
+        params : getCostAndClustersNumber()
+    });
 }
 
 function startKMeans() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    kMeansWorker.postMessage({volumes: JSON.parse(JSON.stringify(volumes)), stations: JSON.parse(JSON.stringify(stations))});
+    clearCanvas();
+    kMeansWorker.postMessage({
+        volumes: JSON.parse(JSON.stringify(volumes)),
+        stations: JSON.parse(JSON.stringify(stations)),
+        params : getCostAndClustersNumber()
+    });
 }
 
 function startClosest() {
-    //ctx.clearRect(0, 0, canvas.width, canvas.height);
-    closestWorker.postMessage({volumes: JSON.parse(JSON.stringify(volumes)), stations: JSON.parse(JSON.stringify(stations))});
+    clearCanvas();
+    closestWorker.postMessage({
+        volumes: JSON.parse(JSON.stringify(volumes)),
+        stations: JSON.parse(JSON.stringify(stations)),
+        params : getCostAndClustersNumber()
+    });
+}
+
+function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 var info = document.getElementById('info');
@@ -30,18 +53,19 @@ function showCanvas() {
     $('.main-container').show();
     $('#result-text').text(res);
     $('#canvas').show();
+    $('#chart').show();
 }
 
 function hideCanvas() {
     $('.first-container').show();
+    $('#optimizations').show();
     $('#buttons-block').show();
     $('#result-block').hide();
     $('#info').hide();
     $('#progress-bar').hide();
     $('#canvas').hide();
+    $('#chart').hide();
 }
-
-var traces = [];
 
 function processEvent(event) {
 
@@ -49,81 +73,67 @@ function processEvent(event) {
         case 'tree':
         case 'shortest':
         case 'kmeans': {
-            var d3 = Plotly.d3;
+            var cnt = 0;
 
             var components = JSON.parse(event.data.text);
 
             for (var i = 0; i < components.length; i++) {
-                var center = components[i].center;
-                var trace = {
-                    mode: 'markers',
-                    x: [],
-                    y: [],
-                    marker: {
-                        size: 15
-                    },
-                    name: 'C' + i
-                };
-                //drawCircle(ctx, center, { color: 'red', radius: 10});
 
                 var station = components[i].station;
+                cnt++;
+                drawRing(ctx, station, { color: 'orange', radius: 8});
+                drawText(ctx, station, station.name, { textShiftX: 20 });
+
                 var points = components[i].points;
 
                 var randomColor = getRandomColor();
 
-                var lineTrace = {
-                    x: [],
-                    y: [],
-                    type: 'scatter',
-                    line: {
-                        width:1
-                    },
-                    color: 'black'
-                };
                 points.forEach(function(p) {
-                    trace.x.push(p.x);
-                    trace.y.push(p.y);
-
-                    lineTrace.x.push(p.x);
-                    lineTrace.x.push(center.x);
-                    lineTrace.y.push(p.y);
-                    lineTrace.y.push(center.y);
-
-                    traces.push(lineTrace);
-                    /*drawCircle(ctx, p, { color: randomColor });
-                    drawLine(ctx, p, station);*/
+                    drawCircle(ctx, p, { color: randomColor, radius: 5 });
+                    drawLine(ctx, p, station);
                 });
-
-                traces.push(trace);
             }
+            break;
+        }
 
-            Plotly.newPlot('result', traces);
+        case 'chart': {
+            var distances = JSON.parse(event.data.text);
+            console.log(event.data.text);
+            var betweenCenters = {
+                x: [],
+                y: [],
+                name: 'Среднее между центрами'
+            };
+
+            var inCluster = {
+                x: [],
+                y: [],
+                name: 'Среднее внутри кластеров'
+            };
+
+            for (var i = 0; i < distances.length; i++) {
+                betweenCenters.x.push(distances[i].result.numberOfClusters);
+                betweenCenters.y.push(distances[i].result.betweenCenters);
+
+                inCluster.x.push(distances[i].result.numberOfClusters);
+                inCluster.y.push(distances[i].result.averageInCluster)
+            }
+            var layout = {
+                xaxis: { title: 'Количество кластеров'},
+                yaxis: { title: 'Расстояние'},
+                title: 'Исходные данные'
+            };
+
+            Plotly.newPlot('chart', [betweenCenters, inCluster], layout);
             break;
         }
 
         case 'stations': {
-            var trace = {
-                mode: 'markers',
-                x: [],
-                y: [],
-                marker: {
-                    size: 30
-                },
-                name: 'Stations'
-            };
-            var stations = JSON.parse(event.data.text);
-            stations.forEach(function(s) {
-                trace.x.push(s.x);
-                trace.y.push(s.y);
-                //drawCircle(ctx, s, { color: 'orange', radius: 8});
-            });
-
-            traces.push(trace);
             break;
         }
 
         default: {
-            info.innerHTML = event.data.msg + ', ' + event.data.text;
+            info.innerHTML = event.data.text;
             if (event.data.msg == 'to') {
                 var percent = (event.data.last - event.data.first)*50/event.data.last;
                 $('.determinate').width(percent + '%');
@@ -132,7 +142,7 @@ function processEvent(event) {
                 var percent = ((event.data.first)*50/event.data.last) + 50;
                 $('.determinate').width(percent + '%');
             }
-            else if (event.data.msg == '_result') {
+            else if (event.data.msg == 'Result') {
                 $('.determinate').width('100%');
                 setTimeout(showCanvas, 1000);
             }
@@ -141,8 +151,8 @@ function processEvent(event) {
 };
 
 var canvas = document.getElementById('canvas');
-var width = canvas.width = 1;
-var height = canvas.height = 1;
+var width = canvas.width = 2000;
+var height = canvas.height = 1700;
 var ctx = canvas.getContext('2d');
 
 var shiftX = 2000;
@@ -150,24 +160,47 @@ var shiftY = 3200;
 
 function drawCircle(ctx, point, params) {
     ctx.beginPath();
+    ctx.fillStyle = 'black';
+    var radius = params && params.radius || 3;
+    ctx.arc(point.x - shiftX, point.y - shiftY, radius, 0, 2 * Math.PI);
+    ctx.fill();
+
     ctx.fillStyle = params && params.color || 'black';
     var radius = params && params.radius || 3;
-    /*ctx.arc(point.x, point.y , radius, 0, 2 * Math.PI);*/
-    ctx.arc(point.x - shiftX, point.y - shiftY, radius, 0, 2 * Math.PI);
+    ctx.arc(point.x - shiftX, point.y - shiftY, radius - 3, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.fill();
 }
 
+function drawRing(ctx, point, params) {
+    ctx.beginPath();
+    ctx.strokeStyle = params && params.color || 'black';
+    ctx.lineWidth = 3;
+    var radius = params && params.radius || 5;
+    ctx.arc(point.x - shiftX, point.y - shiftY, radius, 0, 2 * Math.PI);
+    ctx.closePath();
+    ctx.stroke();
+}
+
 function drawLine(ctx, from, to) {
+    ctx.save();
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 1;
+    ctx.setLineDash([5, 15]);
     ctx.beginPath();
-    /*ctx.moveTo(from.x, from.y );
-    ctx.lineTo(to.x, to.y);*/
     ctx.moveTo(from.x - shiftX, from.y - shiftY);
     ctx.lineTo(to.x - shiftX, to.y - shiftY);
     ctx.closePath();
     ctx.stroke();
+    ctx.restore();
+}
+
+function drawText(ctx, point, text, params) {
+    ctx.font = params && params.font || '12px Verdana';
+    ctx.fillStyle = 'black';
+    var textShiftX = params && params.textShiftX || 0;
+    var textShiftY = params && params.textShiftY || 0;
+    ctx.fillText(text, point.x - shiftX + textShiftX, point.y - shiftY + textShiftY);
 }
 
 function getRandomColor() {
@@ -178,3 +211,4 @@ function getRandomColor() {
     }
     return color;
 }
+

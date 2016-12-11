@@ -1,12 +1,21 @@
 var Util = {
-    countComponentsDistance: function (components, volumes, stations) {
+    countComponentsDistance: function (components, volumes, stations, params) {
         var self = this;
-
+        var cost = Util.getNumber(params && params.stationCost || 0);
         var totalSum = 0;
+
         components.forEach(function (c) {
-            totalSum += self.countComponentDistance(c, volumes, stations);
+            totalSum += self.countComponentDistance(c, volumes, stations, params, cost);
         });
-        return totalSum / components.length;
+
+        var mul = parseInt(components.length) * parseInt(cost);
+
+        return {
+            distance: Math.round(totalSum / components.length) + mul,
+            averageInCluster: Math.round(totalSum / components.length),
+            betweenCenters: this.countAverageDistanceBetweenCenters(components),
+            numberOfClusters: components.length
+        }
     },
 
     countComponentDistance: function (component, volumes, stations) {
@@ -18,11 +27,11 @@ var Util = {
             componentDistance += this.getDistanceBetweenTwoPoints(component.points[i], station);
         }
 
-        return componentDistance / (component.points.length);
+        return (componentDistance / component.points.length);
     },
 
     getDistanceBetweenTwoPoints: function (p1, p2) {
-        return Math.round(Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2)));
+        return Util.getNumber(Math.round(Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2))));
     },
 
     findClosestStationForComponentCenter: function (center, stations) {
@@ -55,6 +64,9 @@ var Util = {
     },
 
     getNumber: function (str) {
+        if (!isNaN(str)) {
+            return Math.round(str);
+        }
         return str.indexOf(',') == -1 ? parseInt(str) : parseInt(str.substr(0, str.indexOf(',')));
     },
 
@@ -95,5 +107,20 @@ var Util = {
             distance: minDistance,
             clusters: clusters
         }
+    },
+
+    countAverageDistanceBetweenCenters: function(components) {
+        var distance = 0, cnt = 0;
+        for (var i = 0; i < components.length; i++) {
+            var firstCenter = this.findComponentCenter(components[i]);
+
+            for (var j = i; j < components.length; j++) {
+                var secondCenter = this.findComponentCenter(components[j]);
+                distance += this.getDistanceBetweenTwoPoints(firstCenter, secondCenter);
+                cnt++;
+            }
+        }
+
+        return Math.round(distance / cnt);
     }
 };
