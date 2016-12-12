@@ -2,6 +2,19 @@ var worker = new Worker('treeClustering.js');
 var kMeansWorker = new Worker('kMeansClustering.js');
 var closestWorker = new Worker('closestClustering.js');
 
+var info = document.getElementById('info');
+var mapStations = [];
+var map = null, geoCollection = null;
+var algorithm;
+
+var canvas = document.getElementById('canvas');
+var width = canvas.width = 2000;
+var height = canvas.height = 1700;
+var ctx = canvas.getContext('2d');
+
+var shiftX = 2000;
+var shiftY = 3200;
+
 function getCostAndClustersNumber() {
     return {
         clustersNumber: document.getElementById('clustersNumber').value,
@@ -10,6 +23,8 @@ function getCostAndClustersNumber() {
 }
 
 function startTree() {
+    algorithm = 'Минимальное покрывающее дерево';
+
     clearCanvas();
     worker.postMessage({
         volumes: JSON.parse(JSON.stringify(volumes)),
@@ -19,6 +34,8 @@ function startTree() {
 }
 
 function startKMeans() {
+    algorithm = 'K-Means';
+
     clearCanvas();
     kMeansWorker.postMessage({
         volumes: JSON.parse(JSON.stringify(volumes)),
@@ -28,6 +45,8 @@ function startKMeans() {
 }
 
 function startClosest() {
+    algorithm = 'Ближайшая станция';
+
     clearCanvas();
     closestWorker.postMessage({
         volumes: JSON.parse(JSON.stringify(volumes)),
@@ -39,10 +58,6 @@ function startClosest() {
 function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
-
-var info = document.getElementById('info');
-var mapStations = [];
-var map = null, geoCollection = null;
 
 [worker, kMeansWorker, closestWorker].forEach(function (w) {
     w.onmessage = processEvent;
@@ -113,15 +128,14 @@ function processEvent(event) {
         case 'tree':
         case 'shortest':
         case 'kmeans': {
-            var cnt = 0;
-
             var components = JSON.parse(event.data.text);
 
             for (var i = 0; i < components.length; i++) {
 
                 var station = components[i].station;
-                cnt++;
+
                 drawRing(ctx, station, {color: 'orange', radius: 8});
+
                 drawText(ctx, station, station.name, {textShiftX: 20});
 
                 mapStations.push(station);
@@ -135,6 +149,12 @@ function processEvent(event) {
                     drawLine(ctx, p, station);
                 });
             }
+
+            drawText(ctx, {x: 400 + shiftX, y: 70 + shiftY}, 'Алгоритм: ' + "'" + algorithm + "'", {font: '30px Verdana'});
+            drawText(ctx, {x: 400 + shiftX, y: 100 + shiftY}, 'Количество кластеров: ' + components.length, {font: '20px Verdana'});
+            var params = getCostAndClustersNumber();
+            drawText(ctx, {x: 400 + shiftX, y: 130 + shiftY}, 'Параметры: цена станции - ' + params.stationCost + ', количество заданных кластеров - ' + params.clustersNumber, {font: '20px Verdana'});
+
             break;
         }
 
@@ -171,6 +191,7 @@ function processEvent(event) {
         }
 
         case 'stations': {
+
             break;
         }
 
@@ -191,14 +212,6 @@ function processEvent(event) {
         }
     }
 };
-
-var canvas = document.getElementById('canvas');
-var width = canvas.width = 2000;
-var height = canvas.height = 1700;
-var ctx = canvas.getContext('2d');
-
-var shiftX = 2000;
-var shiftY = 3200;
 
 function drawCircle(ctx, point, params) {
     ctx.beginPath();
