@@ -100,7 +100,6 @@ function containsEdge(from, to, edges) {
 function work(volumes, stations, params) {
     Util.prepareData(volumes);
     Util.prepareData(stations);
-    sendMessage('stations', JSON.stringify(stations));
 
     var matrix = createTree(volumes);
 
@@ -110,26 +109,28 @@ function work(volumes, stations, params) {
         for (var i = 0; i < 30; i++) {
             var matrixCopy = JSON.parse(JSON.stringify(matrix));
             removeLongestEdge(i, matrixCopy);
-            var distanceResult = countTreeDistance(matrixCopy, volumes, stations, params);
-            console.log('i: ' + i + ', distance: ' + distanceResult.distance);
+
+            var result = countTreeDistance(matrixCopy, volumes, stations, params);
+
             sendMessage('distance', 'Проверено ребер: ' + i + '/30', i, 30);
-            distances.push({distance: distanceResult.distance, clusters: i, result: distanceResult});
+
+            distances.push(result);
         }
     } else {
         var clustersNumber = Util.getNumber(params.clustersNumber) - 1;
         var matrixCopy = JSON.parse(JSON.stringify(matrix));
         removeLongestEdge(clustersNumber, matrixCopy);
-        var distanceResult = countTreeDistance(matrixCopy, volumes, stations, params);
-        console.log('i: ' + clustersNumber + ', distance: ' + distanceResult.distance);
+
+        var result = countTreeDistance(matrixCopy, volumes, stations, params);
         sendMessage('distance', 'Проверено ребер: ' + clustersNumber + '/30', clustersNumber, 30);
-        distances.push({distance: distanceResult.distance, clusters: clustersNumber, result: distanceResult});
+        distances.push(result);
     }
 
     sendMessage('chart', JSON.stringify(distances));
 
-    var minDistance = Util.findMinDistance(distances);
+    var result = Util.findMinDistance(distances);
 
-    removeLongestEdge(minDistance.clusters, matrix);
+    removeLongestEdge(result.min.numberOfClusters - 1, matrix);
     var components = findComponents(matrix, volumes);
 
     var arr = [];
@@ -142,7 +143,7 @@ function work(volumes, stations, params) {
     }
 
     sendMessage('tree', JSON.stringify(components));
-    sendMessage('Result', 'Среднее расстояние: ' + minDistance.distance + ', количество кластеров: ' + (parseInt(minDistance.clusters)+1));
+    sendMessage('Result', Util.prepareResult(result.min, params));
 }
 
 

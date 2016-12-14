@@ -56,6 +56,7 @@ function startClosest() {
 }
 
 function clearCanvas() {
+    mapStations.length = 0;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
@@ -119,8 +120,6 @@ function showMap() {
 
         geoCollection.add(myPlacemark);
     }
-
-    mapStations.length = 0;
 }
 
 function processEvent(event) {
@@ -160,7 +159,6 @@ function processEvent(event) {
 
         case 'chart': {
             var distances = JSON.parse(event.data.text);
-            console.log(event.data.text);
             var betweenCenters = {
                 x: [],
                 y: [],
@@ -173,25 +171,36 @@ function processEvent(event) {
                 name: 'Среднее внутри кластеров'
             };
 
-            for (var i = 0; i < distances.length; i++) {
-                betweenCenters.x.push(distances[i].result.numberOfClusters);
-                betweenCenters.y.push(distances[i].result.betweenCenters);
+            var cost = {
+                x: [],
+                y: [],
+                name: 'Цена'
+            };
 
-                inCluster.x.push(distances[i].result.numberOfClusters);
-                inCluster.y.push(distances[i].result.averageInCluster)
+            for (var i = 0; i < distances.length; i++) {
+                betweenCenters.x.push(distances[i].numberOfClusters);
+                betweenCenters.y.push(distances[i].betweenCenters);
+
+                inCluster.x.push(distances[i].numberOfClusters);
+                inCluster.y.push(distances[i].averageInCluster);
+
+                cost.x.push(distances[i].numberOfClusters);
+                cost.y.push(distances[i].cost);
             }
+
             var layout = {
                 xaxis: {title: 'Количество кластеров'},
                 yaxis: {title: 'Расстояние'},
                 title: 'Исходные данные'
             };
 
-            Plotly.newPlot('chart', [betweenCenters, inCluster], layout);
+            Plotly.newPlot('chart', [betweenCenters, inCluster, cost], layout);
             break;
         }
-
-        case 'stations': {
-
+        case 'Result': {
+            info.innerHTML = event.data.text;
+            $('.determinate').width('100%');
+            setTimeout(showCanvas, 1000);
             break;
         }
 
@@ -205,13 +214,9 @@ function processEvent(event) {
                 var percent = ((event.data.first) * 50 / event.data.last) + 50;
                 $('.determinate').width(percent + '%');
             }
-            else if (event.data.msg == 'Result') {
-                $('.determinate').width('100%');
-                setTimeout(showCanvas, 1000);
-            }
         }
     }
-};
+}
 
 function drawCircle(ctx, point, params) {
     ctx.beginPath();

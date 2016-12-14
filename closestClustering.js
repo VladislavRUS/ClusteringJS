@@ -1,10 +1,10 @@
 importScripts('util.js');
 
 onmessage = function(event) {
-    startClosest(event.data.volumes, event.data.stations);
+    startClosest(event.data.volumes, event.data.stations, event.data.params);
 };
 
-function startClosest(volumes, stations) {
+function startClosest(volumes, stations, params) {
     Util.prepareData(volumes);
     Util.prepareData(stations);
 
@@ -31,9 +31,15 @@ function startClosest(volumes, stations) {
         arr.push(component);
     }
 
+    var distance = Util.countComponentsDistance(arr, volumes, stations, params);
+    var distances = [distance];
+
+    sendMessage('chart', JSON.stringify(distances));
+
+    var result = Util.findMinDistance(distances);
+
     sendMessage('shortest', JSON.stringify(arr));
-    sendMessage('Result', 'Среднее расстояние: ' + (Util.countComponentsDistance(arr, volumes, stations)).distance + ', количество кластеров: ' + arr.length);
-    sendMessage('stations', JSON.stringify(stations));
+    sendMessage('Result', Util.prepareResult(result.min, params));
 }
 
 function sendMessage(msg, text) {

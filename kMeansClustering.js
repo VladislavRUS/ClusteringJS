@@ -7,7 +7,6 @@ onmessage = function(event) {
 function startKMeans(volumes, stations, params) {
     Util.prepareData(volumes);
     Util.prepareData(stations);
-    sendMessage('stations', JSON.stringify(stations));
 
     var data = new Array(volumes.length);
     for (var i = 0; i < volumes.length; i++) {
@@ -15,8 +14,9 @@ function startKMeans(volumes, stations, params) {
     }
 
     var bestClusterizing = clusterLoop(data, volumes, stations, params);
+
     sendMessage('kmeans', JSON.stringify(bestClusterizing.clusters));
-    sendMessage('Result', 'Среднее расстояние: ' + bestClusterizing.distance + ', количество кластеров: ' + bestClusterizing.clusters.length);
+    sendMessage('Result', Util.prepareResult(bestClusterizing.result, params));
 }
 
 function getComponentsFromKMeans(k, data, volumes) {
@@ -58,12 +58,16 @@ function componentsContainEmptyCluster(components) {
 function clusterLoop(data, volumes, stations, params) {
     var distances = [];
     var defaultNumberOfClusters = 60;
+    var componentsArr = [];
+
     if (params.clustersNumber == "") {
         for (var i = 2; i < defaultNumberOfClusters; i++) {
             var components = getComponentsFromKMeans(i, data, JSON.parse(JSON.stringify(volumes)));
             if (!componentsContainEmptyCluster(components)) {
-                var distanceResult = Util.countComponentsDistance(components, JSON.parse(JSON.stringify(volumes)), stations, params);
-                distances.push({distance: distanceResult.distance, clusters: i, result: distanceResult});
+                componentsArr.push(components);
+
+                var result = Util.countComponentsDistance(components, JSON.parse(JSON.stringify(volumes)), stations, params);
+                distances.push(result);
                 sendMessage('kmeans counted', 'Посчитано K:' + i + ' /' + defaultNumberOfClusters);
 
             } else {
@@ -79,8 +83,10 @@ function clusterLoop(data, volumes, stations, params) {
         }
         var components = getComponentsFromKMeans(clustersNumber, data, JSON.parse(JSON.stringify(volumes)));
         if (!componentsContainEmptyCluster(components)) {
-            var distanceResult = Util.countComponentsDistance(components, JSON.parse(JSON.stringify(volumes)), stations, params);
-            distances.push({distance: distanceResult.distance, clusters: clustersNumber, result: distanceResult});
+            componentsArr.push(components);
+
+            var result = Util.countComponentsDistance(components, JSON.parse(JSON.stringify(volumes)), stations, params);
+            distances.push(result);
             sendMessage('kmeans counted', 'Посчитано K:' + clustersNumber + ' /30');
 
         } else {
@@ -90,19 +96,20 @@ function clusterLoop(data, volumes, stations, params) {
 
     sendMessage('chart', JSON.stringify(distances));
 
-    var minDistance = Util.findMinDistance(distances);
+    var result = Util.findMinDistance(distances);
 
-    var components = getComponentsFromKMeans(minDistance.clusters, data, JSON.parse(JSON.stringify(volumes)));
-    console.log(components.length);
+    var components = componentsArr[result.idx];
+
     for (var i = 0; i < components.length; i++) {
         var component = components[i];
         component.idx = i;
         component.center = Util.findComponentCenter(component, volumes);
         component.station = stations[Util.findClosestStationForComponentCenter(component.center, stations)];
     }
+
     return {
         clusters: components,
-        distance: minDistance.distance
+        result: result.min
     };
 }
 

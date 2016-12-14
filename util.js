@@ -11,7 +11,7 @@ var Util = {
         var mul = parseInt(components.length) * parseInt(cost);
 
         return {
-            distance: Math.round(totalSum / components.length) + mul,
+            cost: Math.round(totalSum / components.length) + mul,
             averageInCluster: Math.round(totalSum / components.length),
             betweenCenters: this.countAverageDistanceBetweenCenters(components),
             numberOfClusters: components.length
@@ -96,17 +96,19 @@ var Util = {
     },
 
     findMinDistance: function (arr) {
-        var minDistance = Number.MAX_VALUE, clusters = -1;
-        for (var i = 0; i < arr.length; i++) {
-            if (arr[i].distance < minDistance) {
-                minDistance = arr[i].distance;
-                clusters = arr[i].clusters;
+        console.log(arr);
+
+        var minCost = arr[0].cost, idx = 0;
+        for (var i = 1; i < arr.length; i++) {
+            if (arr[i].cost < minCost) {
+                minCost = arr[i].cost;
+                idx = i;
             }
         }
         return {
-            distance: minDistance,
-            clusters: clusters
-        }
+            min: arr[idx],
+            idx: idx
+        };
     },
 
     countAverageDistanceBetweenCenters: function(components) {
@@ -122,5 +124,18 @@ var Util = {
         }
 
         return Math.round(distance / cnt);
+    },
+
+    prepareResult: function(result, params) {
+
+        var cost = params && params.stationCost || 0;
+        var av = result.averageInCluster;
+        var n = result.numberOfClusters;
+
+        var averageDistance = 'Среднее расстояние в кластере: ' + av + '. ';
+        var totalDistance = 'Суммарное расстояние: ' + av + ' * ' + n + ' = ' + av * n + '. ';
+        var totalCost = 'Затраты: ' + av * n + ' + ' + n  + ' * ' + cost + ' = ' + (av * n + n * cost) + '. ';
+
+        return averageDistance + totalDistance + totalCost;
     }
 };
