@@ -148,7 +148,7 @@ function processEvent(event) {
                     drawLine(ctx, p, station);
                 });
 
-                drawText(ctx, station, station.name, {textShiftX: 40, font: '20px Verdana'});
+                drawText(ctx, station, station.name, {textShiftX: 40, font: '15px Verdana'});
             }
 
             drawText(ctx, {x: 400 + shiftX, y: 70 + shiftY}, 'Алгоритм: ' + "'" + algorithm + "'", {font: '30px Verdana'});
