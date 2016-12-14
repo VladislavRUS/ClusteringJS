@@ -137,8 +137,6 @@ function processEvent(event) {
 
                 drawRing(ctx, station, {color: 'orange', radius: 8});
 
-                drawText(ctx, station, station.name, {textShiftX: 40, font: '20px Verdana'});
-
                 mapStations.push(station);
 
                 var points = components[i].points;
@@ -149,6 +147,8 @@ function processEvent(event) {
                     drawCircle(ctx, p, {color: randomColor, radius: 5});
                     drawLine(ctx, p, station);
                 });
+
+                drawText(ctx, station, station.name, {textShiftX: 40, font: '20px Verdana'});
             }
 
             drawText(ctx, {x: 400 + shiftX, y: 70 + shiftY}, 'Алгоритм: ' + "'" + algorithm + "'", {font: '30px Verdana'});
