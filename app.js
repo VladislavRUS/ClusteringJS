@@ -58,6 +58,8 @@ function startClosest() {
 function clearCanvas() {
     mapStations.length = 0;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'white';
+    ctx.rect(0, 0, canvas.width, canvas.height);
 }
 
 [worker, kMeansWorker, closestWorker].forEach(function (w) {
@@ -135,7 +137,7 @@ function processEvent(event) {
 
                 drawRing(ctx, station, {color: 'orange', radius: 8});
 
-                drawText(ctx, station, station.name, {textShiftX: 20});
+                drawText(ctx, station, station.name, {textShiftX: 40, font: '20px Verdana'});
 
                 mapStations.push(station);
 
@@ -222,12 +224,12 @@ function drawCircle(ctx, point, params) {
     ctx.beginPath();
     ctx.fillStyle = 'black';
     var radius = params && params.radius || 3;
-    ctx.arc(point.x - shiftX, point.y - shiftY, radius, 0, 2 * Math.PI);
+    ctx.arc(point.x - shiftX, canvas.height - (point.y - shiftY), radius, 0, 2 * Math.PI);
     ctx.fill();
 
     ctx.fillStyle = params && params.color || 'black';
     var radius = params && params.radius || 3;
-    ctx.arc(point.x - shiftX, point.y - shiftY, radius - 3, 0, 2 * Math.PI);
+    ctx.arc(point.x - shiftX, canvas.height - (point.y - shiftY), radius - 3, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.fill();
 }
@@ -237,7 +239,7 @@ function drawRing(ctx, point, params) {
     ctx.strokeStyle = params && params.color || 'black';
     ctx.lineWidth = 3;
     var radius = params && params.radius || 5;
-    ctx.arc(point.x - shiftX, point.y - shiftY, radius, 0, 2 * Math.PI);
+    ctx.arc(point.x - shiftX, canvas.height - (point.y - shiftY), radius, 0, 2 * Math.PI);
     ctx.closePath();
     ctx.stroke();
 }
@@ -248,8 +250,8 @@ function drawLine(ctx, from, to) {
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 15]);
     ctx.beginPath();
-    ctx.moveTo(from.x - shiftX, from.y - shiftY);
-    ctx.lineTo(to.x - shiftX, to.y - shiftY);
+    ctx.moveTo(from.x - shiftX, canvas.height - (from.y - shiftY));
+    ctx.lineTo(to.x - shiftX, canvas.height - (to.y - shiftY));
     ctx.closePath();
     ctx.stroke();
     ctx.restore();
@@ -260,7 +262,7 @@ function drawText(ctx, point, text, params) {
     ctx.fillStyle = 'black';
     var textShiftX = params && params.textShiftX || 0;
     var textShiftY = params && params.textShiftY || 0;
-    ctx.fillText(text, point.x - shiftX + textShiftX, point.y - shiftY + textShiftY);
+    ctx.fillText(text, point.x - shiftX + textShiftX, canvas.height - (point.y - shiftY) + textShiftY);
 }
 
 function getRandomColor() {
