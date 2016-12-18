@@ -2,6 +2,7 @@ var Util = {
     countComponentsDistance: function (components, volumes, stations, params) {
         var self = this;
         var cost = Util.getNumber(params && params.stationCost || 0);
+        var kmCost = Util.getNumber(params && params.kmCost || 1);
         var totalSum = 0;
 
         components.forEach(function (c) {
@@ -11,7 +12,7 @@ var Util = {
         var mul = parseInt(components.length) * parseInt(cost);
 
         return {
-            cost: Math.round(totalSum / components.length) + mul,
+            cost: Math.round(totalSum / components.length) * components.length * kmCost + mul,
             averageInCluster: Math.round(totalSum / components.length),
             betweenCenters: this.countAverageDistanceBetweenCenters(components),
             numberOfClusters: components.length
@@ -98,10 +99,10 @@ var Util = {
     findMinDistance: function (arr) {
         console.log(arr);
 
-        var minCost = arr[0].cost * arr[0].numberOfClusters, idx = 0;
+        var minCost = arr[0].cost , idx = 0;
         for (var i = 1; i < arr.length; i++) {
-            if (arr[i].cost * arr[i].numberOfClusters < minCost) {
-                minCost = arr[i].cost * arr[i].numberOfClusters;
+            if (arr[i].cost < minCost) {
+                minCost = arr[i].cost;
                 idx = i;
             }
         }
@@ -129,12 +130,13 @@ var Util = {
     prepareResult: function(result, params) {
 
         var cost = params && params.stationCost || 0;
+        var kmCost = params && params.kmCost || 1;
         var av = result.averageInCluster;
         var n = result.numberOfClusters;
 
         var averageDistance = 'Среднее расстояние в кластере: ' + av + '. ';
         var totalDistance = 'Суммарное расстояние: ' + av + ' * ' + n + ' = ' + av * n + '. ';
-        var totalCost = 'Затраты: ' + av * n + ' + ' + n  + ' * ' + cost + ' = ' + (av * n + n * cost) + '. ';
+        var totalCost = 'Затраты: ' + av * n + ' * ' + kmCost + ' + ' + n  + ' * ' + cost + ' = ' + (av * n * kmCost + n * cost) + '. ';
 
         return averageDistance + totalDistance + totalCost;
     }

@@ -18,7 +18,8 @@ var shiftY = 3200;
 function getCostAndClustersNumber() {
     return {
         clustersNumber: document.getElementById('clustersNumber').value,
-        stationCost: document.getElementById('stationCost').value
+        stationCost: document.getElementById('stationCost').value,
+        kmCost: document.getElementById('kmCost').value
     }
 }
 
