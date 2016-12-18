@@ -98,10 +98,10 @@ var Util = {
     findMinDistance: function (arr) {
         console.log(arr);
 
-        var minCost = arr[0].cost, idx = 0;
+        var minCost = arr[0].cost * arr[0].numberOfClusters, idx = 0;
         for (var i = 1; i < arr.length; i++) {
-            if (arr[i].cost < minCost) {
-                minCost = arr[i].cost;
+            if (arr[i].cost * arr[i].numberOfClusters < minCost) {
+                minCost = arr[i].cost * arr[i].numberOfClusters;
                 idx = i;
             }
         }

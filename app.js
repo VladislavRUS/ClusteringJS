@@ -203,6 +203,9 @@ function processEvent(event) {
             info.innerHTML = event.data.text;
             $('.determinate').width('100%');
             setTimeout(showCanvas, 1000);
+
+            drawText(ctx, {x: 400 + shiftX, y: 160 + shiftY}, event.data.text, {font: '20px Verdana'});
+
             break;
         }
 
