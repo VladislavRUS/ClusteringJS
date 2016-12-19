@@ -5,18 +5,59 @@ var Util = {
         var kmCost = Util.getNumber(params && params.kmCost || 1);
         var totalSum = 0;
 
+        var idx = self.countDBCoefficient(components);
+
         components.forEach(function (c) {
             totalSum += self.countComponentDistance(c, volumes, stations, params, cost);
         });
 
-        var mul = parseInt(components.length) * parseInt(cost);
-
         return {
-            cost: Math.round(totalSum / components.length) * components.length * kmCost + mul,
+            idx: idx,
             averageInCluster: Math.round(totalSum / components.length),
-            betweenCenters: this.countAverageDistanceBetweenCenters(components),
+            betweenCenters: self.countAverageDistanceBetweenCenters(components),
             numberOfClusters: components.length
         }
+    },
+
+    countDBCoefficient: function(components) {
+        var self = this;
+        var max = [];
+
+        for (var i = 0; i < components.length; i++) {
+            var current = components[i];
+            var idxArr = [];
+
+            for (var j = 0; j < components.length; j++) {
+                if (i !== j) {
+                    var firstAverageDistanceInCluster = self.countAverageDistanceInCluster(current);
+                    var secondAverageDistanceInCluster = self.countAverageDistanceInCluster(components[j]);
+
+                    var firstCenter = self.findComponentCenter(current);
+                    var secondCenter = self.findComponentCenter(components[j]);
+
+                    var distanceBetweenClusters = self.getDistanceBetweenTwoPoints(firstCenter, secondCenter);
+
+                    var result = (firstAverageDistanceInCluster + secondAverageDistanceInCluster) / distanceBetweenClusters;
+                    idxArr.push(+result.toFixed(2));
+                }
+            }
+
+            var maxIdx = 0;
+            for (var k = 0; k < idxArr.length; k++) {
+                if (idxArr[k] > maxIdx) {
+                    maxIdx = idxArr[k];
+                }
+            }
+
+            max.push(maxIdx);
+        }
+
+        var sum = 0;
+        for (var i = 0; i < max.length; i++) {
+            sum += max[i];
+        }
+
+        return +(sum / components.length).toFixed(2);
     },
 
     countComponentDistance: function (component, volumes, stations) {
@@ -73,6 +114,7 @@ var Util = {
 
     prepareData: function (arr) {
         for (var i = 0; i < arr.length; i++) {
+
             arr[i].x = this.getNumber(arr[i].x);
             arr[i].y = this.getNumber(arr[i].y);
 
@@ -97,12 +139,11 @@ var Util = {
     },
 
     findMinDistance: function (arr) {
-        console.log(arr);
 
-        var minCost = arr[0].cost , idx = 0;
+        var minIdx = arr[0].idx, idx = 0;
         for (var i = 1; i < arr.length; i++) {
-            if (arr[i].cost < minCost) {
-                minCost = arr[i].cost;
+            if (arr[i].idx < minIdx) {
+                minIdx = arr[i].idx;
                 idx = i;
             }
         }
@@ -127,6 +168,22 @@ var Util = {
         return Math.round(distance / cnt);
     },
 
+    countAverageDistanceInCluster: function(cluster) {
+        var center = this.findComponentCenter(cluster);
+        var distances = [];
+
+        for (var i = 0; i < cluster.points.length; i++) {
+            distances.push(this.getDistanceBetweenTwoPoints(center, cluster.points[i]));
+        }
+
+        var sum = 0;
+        for (var i = 0; i < distances.length; i++) {
+            sum += distances[i];
+        }
+
+        return +(sum/distances.length).toFixed(2);
+    },
+
     prepareResult: function(result, params) {
 
         var cost = params && params.stationCost || 0;
@@ -136,8 +193,8 @@ var Util = {
 
         var averageDistance = 'Среднее расстояние в кластере: ' + av + '. ';
         var totalDistance = 'Суммарное расстояние: ' + av + ' * ' + n + ' = ' + av * n + '. ';
-        var totalCost = 'Затраты: ' + av * n + ' * ' + kmCost + ' + ' + n  + ' * ' + cost + ' = ' + (av * n * kmCost + n * cost) + '. ';
-
+        //var totalCost = 'Затраты: ' + av * n + ' * ' + kmCost + ' + ' + n  + ' * ' + cost + ' = ' + (av * n * kmCost + n * cost) + '. ';
+        var totalCost = '';
         return averageDistance + totalDistance + totalCost;
     }
 };

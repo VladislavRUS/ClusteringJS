@@ -155,7 +155,8 @@ function processEvent(event) {
             drawText(ctx, {x: 400 + shiftX, y: 70 + shiftY}, 'Алгоритм: ' + "'" + algorithm + "'", {font: '30px Verdana'});
             drawText(ctx, {x: 400 + shiftX, y: 100 + shiftY}, 'Количество кластеров: ' + components.length, {font: '20px Verdana'});
             var params = getCostAndClustersNumber();
-            drawText(ctx, {x: 400 + shiftX, y: 130 + shiftY}, 'Параметры: цена станции - ' + params.stationCost + ', количество заданных кластеров - ' + params.clustersNumber, {font: '20px Verdana'});
+            //drawText(ctx, {x: 400 + shiftX, y: 130 + shiftY}, 'Параметры: цена станции - ' + params.stationCost + ', количество заданных кластеров - ' + params.clustersNumber, {font: '20px Verdana'});
+            drawText(ctx, {x: 400 + shiftX, y: 130 + shiftY}, 'Параметры: количество заданных кластеров - ' + params.clustersNumber, {font: '20px Verdana'});
 
             break;
         }
@@ -177,7 +178,7 @@ function processEvent(event) {
             var cost = {
                 x: [],
                 y: [],
-                name: 'Цена'
+                name: 'Индекс ДБ * 100'
             };
 
             for (var i = 0; i < distances.length; i++) {
@@ -188,7 +189,7 @@ function processEvent(event) {
                 inCluster.y.push(distances[i].averageInCluster);
 
                 cost.x.push(distances[i].numberOfClusters);
-                cost.y.push(distances[i].cost);
+                cost.y.push(distances[i].idx * 100);
             }
 
             var layout = {
