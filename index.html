@@ -39,11 +39,12 @@
     <div id="optimizations">
         <input id="clustersNumber" type="text" placeholder="Задайте количество кластеров*">
         <input id="stationCost" type="text" placeholder="Задайте стоимость одного КП**" style="display: none">
-        <input id="kmCost" type="text" placeholder="Задайте стоимость одного километра дороги***" style="display: none;">
+        <input id="kmCost" type="text" placeholder="Задайте стоимость одного километра дороги***"
+               style="display: none;">
 
         <p>*если не задан параметр К, алгоритм автоматически подберет лучшее количество</p>
-      <!--  <p>**по умолчанию стоимость КП равна 0</p>
-        <p>***по умолчанию стоимость 1 км равна 1</p>-->
+        <!--  <p>**по умолчанию стоимость КП равна 0</p>
+          <p>***по умолчанию стоимость 1 км равна 1</p>-->
     </div>
 
 </div>
@@ -58,7 +59,13 @@
     </div>
     <div id="map" style="width: 100%; height: 100%; position: relative; margin: auto"></div>
     <canvas id="canvas"></canvas>
-    <div id="chart"></div>
+    <div id="charts">
+        <div id="chart"></div>
+        <div id="sum"></div>
+        <div id="sumSize"></div>
+        <div id="averageInAverage"></div>
+        <div id="idx"></div>
+    </div>
 </div>
 <!--
 <div id="result" style="width: 1500px; height: 1500px"></div>-->

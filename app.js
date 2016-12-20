@@ -75,7 +75,7 @@ function showCanvas() {
     $('.main-container').show();
     $('#result-text').text(res);
     $('#canvas').show();
-    $('#chart').show();
+    $('#charts').show();
 }
 
 function hideCanvas() {
@@ -86,7 +86,7 @@ function hideCanvas() {
     $('#info').hide();
     $('#progress-bar').hide();
     $('#canvas').hide();
-    $('#chart').hide();
+    $('#charts').hide();
     $('#map').hide();
 }
 
@@ -181,6 +181,30 @@ function processEvent(event) {
                 name: 'Индекс ДБ * 100'
             };
 
+            var sumDistance = {
+                x: [],
+                y: [],
+                name: 'Суммарное расстояние'
+            };
+
+            var sumDistanceSize = {
+                x: [],
+                y: [],
+                name: 'Суммарное расстояние с умножением на размер точки'
+            };
+
+            var idxOnly = {
+                x: [],
+                y: [],
+                name: 'Индекс'
+            };
+
+            var averageInAverage = {
+                x: [],
+                y: [],
+                name: 'Среднее по средним'
+            };
+
             for (var i = 0; i < distances.length; i++) {
                 betweenCenters.x.push(distances[i].numberOfClusters);
                 betweenCenters.y.push(distances[i].betweenCenters);
@@ -190,6 +214,18 @@ function processEvent(event) {
 
                 cost.x.push(distances[i].numberOfClusters);
                 cost.y.push(distances[i].idx * 100);
+
+                sumDistance.x.push(distances[i].numberOfClusters);
+                sumDistance.y.push(distances[i].sumDistance);
+
+                sumDistanceSize.x.push(distances[i].numberOfClusters);
+                sumDistanceSize.y.push(distances[i].sumDistanceSize);
+
+                idxOnly.x.push(distances[i].numberOfClusters);
+                idxOnly.y.push(distances[i].idx);
+
+                averageInAverage.x.push(distances[i].numberOfClusters);
+                averageInAverage.y.push(distances[i].averageInAverage);
             }
 
             var layout = {
@@ -199,6 +235,36 @@ function processEvent(event) {
             };
 
             Plotly.newPlot('chart', [betweenCenters, inCluster, cost], layout);
+
+            var layout1 = {
+                xaxis: {title: 'Количество кластеров'},
+                yaxis: {title: 'Расстояние'},
+                title: 'Суммарное расстояние'
+            };
+
+            Plotly.newPlot('sum', [sumDistance], layout1);
+
+            var layout2 = {
+                xaxis: {title: 'Количество кластеров'},
+                yaxis: {title: 'Расстояние'},
+                title: 'Суммарное расстояние с умножением на размер точки'
+            };
+            Plotly.newPlot('sumSize', [sumDistanceSize], layout2);
+
+            var layout3 = {
+                xaxis: {title: 'Количество кластеров'},
+                yaxis: {title: 'Расстояние'},
+                title: 'Индекс ДВ'
+            };
+            Plotly.newPlot('idx', [idxOnly], layout3);
+
+            var layout4 = {
+                xaxis: {title: 'Количество кластеров'},
+                yaxis: {title: 'Расстояние'},
+                title: 'Среднее по средним'
+            };
+            Plotly.newPlot('averageInAverage', [averageInAverage], layout4);
+
             break;
         }
         case 'Result': {

@@ -15,8 +15,56 @@ var Util = {
             idx: idx,
             averageInCluster: Math.round(totalSum / components.length),
             betweenCenters: self.countAverageDistanceBetweenCenters(components),
-            numberOfClusters: components.length
+            numberOfClusters: components.length,
+            sumDistance: self.countSumDistance(components),
+            sumDistanceSize: self.countSumDistanceWithSize(components),
+            averageInAverage: self.countAverageInAverage(components)
         }
+    },
+
+    countAverageInAverage: function(components) {
+        var self = this;
+        var averageInClusters = 0;
+
+        components.forEach(function(component) {
+            var center = self.findComponentCenter(component);
+
+            var distance = 0;
+            for (var i = 0; i < component.points.length; i++) {
+                distance += self.getDistanceBetweenTwoPoints(center, component.points[i]);
+            }
+            averageInClusters += (distance / component.points.length);
+        });
+
+       return averageInClusters/components.length;
+    },
+
+    countSumDistanceWithSize: function(components) {
+        var sumDistance = 0;
+
+        for (var i = 0; i < components.length; i++) {
+            var component = components[i];
+            var center = this.findComponentCenter(component);
+            for (var j = 0; j < component.points.length; j++) {
+                sumDistance += this.getDistanceBetweenTwoPoints(center, component.points[j]) * Util.getNumber(component.points[j].size);
+            }
+        }
+
+        return sumDistance;
+    },
+
+    countSumDistance: function(components) {
+        var sumDistance = 0;
+
+        for (var i = 0; i < components.length; i++) {
+            var component = components[i];
+            var center = this.findComponentCenter(component);
+            for (var j = 0; j < component.points.length; j++) {
+                sumDistance += this.getDistanceBetweenTwoPoints(center, component.points[j]);
+            }
+        }
+
+        return sumDistance;
     },
 
     countDBCoefficient: function(components) {
