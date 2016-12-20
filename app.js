@@ -205,6 +205,18 @@ function processEvent(event) {
                 name: 'Среднее по средним'
             };
 
+            var averageInClusterK = {
+                x: [],
+                y: [],
+                name: 'Среднее с умножением на К'
+            };
+
+            var averageInClusterN = {
+                x: [],
+                y: [],
+                name: 'Среднее с умножением на среднее кол-во точек в кластере'
+            };
+
             for (var i = 0; i < distances.length; i++) {
                 betweenCenters.x.push(distances[i].numberOfClusters);
                 betweenCenters.y.push(distances[i].betweenCenters);
@@ -226,6 +238,12 @@ function processEvent(event) {
 
                 averageInAverage.x.push(distances[i].numberOfClusters);
                 averageInAverage.y.push(distances[i].averageInAverage);
+
+                averageInClusterK.x.push(distances[i].numberOfClusters);
+                averageInClusterK.y.push(distances[i].averageInCluster * distances[i].numberOfClusters);
+
+                averageInClusterN.x.push(distances[i].numberOfClusters);
+                averageInClusterN.y.push(distances[i].averageInCluster * distances[i].averageN);
             }
 
             var layout = {
@@ -239,7 +257,7 @@ function processEvent(event) {
             var layout1 = {
                 xaxis: {title: 'Количество кластеров'},
                 yaxis: {title: 'Расстояние'},
-                title: 'Суммарное расстояние'
+                title: 'Сумм. расст. от точек до центров их кластеров'
             };
 
             Plotly.newPlot('sum', [sumDistance], layout1);
@@ -247,7 +265,7 @@ function processEvent(event) {
             var layout2 = {
                 xaxis: {title: 'Количество кластеров'},
                 yaxis: {title: 'Расстояние'},
-                title: 'Суммарное расстояние с умножением на размер точки'
+                title: 'Сумм. расст. от точек до центров их кл-в с умножением на размер точки'
             };
             Plotly.newPlot('sumSize', [sumDistanceSize], layout2);
 
@@ -264,6 +282,20 @@ function processEvent(event) {
                 title: 'Среднее по средним'
             };
             Plotly.newPlot('averageInAverage', [averageInAverage], layout4);
+
+            var layout6 = {
+                xaxis: {title: 'Количество кластеров'},
+                yaxis: {title: 'Расстояние'},
+                title: 'Среднее в кластере с умножением на кол-во кластеров'
+            };
+            Plotly.newPlot('averageInClusterK', [averageInClusterK], layout6);
+
+            var layout7 = {
+                xaxis: {title: 'Количество кластеров'},
+                yaxis: {title: 'Расстояние'},
+                title: 'Среднее в кластере с умножением на среднее на кол-во точек'
+            };
+            Plotly.newPlot('averageInClusterN', [averageInClusterN], layout7);
 
             break;
         }

@@ -18,8 +18,18 @@ var Util = {
             numberOfClusters: components.length,
             sumDistance: self.countSumDistance(components),
             sumDistanceSize: self.countSumDistanceWithSize(components),
-            averageInAverage: self.countAverageInAverage(components)
+            averageInAverage: self.countAverageInAverage(components),
+            averageN: self.countAverageN(components)
         }
+    },
+
+    countAverageN: function(components) {
+        var totalPoints = 0;
+        for (var i = 0; i < components.length; i++) {
+            totalPoints += components[i].points.length;
+        }
+
+        return totalPoints/components.length;
     },
 
     countAverageInAverage: function(components) {
