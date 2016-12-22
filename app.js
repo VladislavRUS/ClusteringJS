@@ -8,12 +8,12 @@ var map = null, geoCollection = null;
 var algorithm;
 
 var canvas = document.getElementById('canvas');
-var width = canvas.width = 2000;
-var height = canvas.height = 1700;
+var width = canvas.width = 4000;
+var height = canvas.height = 1500;
 var ctx = canvas.getContext('2d');
 
-var shiftX = 2000;
-var shiftY = 3200;
+var shiftX = 5000;
+var shiftY = 5300;
 
 function getCostAndClustersNumber() {
     return {
