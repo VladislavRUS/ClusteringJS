@@ -43,5 +43,22 @@ $(function() {
 
     $('#mapBtn').click(function() {
         showMap();
-    })
+    });
+
+    $('#index').click(function() {
+        $('#costPar').hide();
+        $('#stationCost').hide();
+        $('#cost').hide();
+    });
+
+    $('#sumDistance').click(function() {
+        $('#costPar').show();
+        $('#stationCost').show();
+        $('#cost').show();
+    });
+
+    $('#costPar').hide();
+    $('#stationCost').hide();
+    $('#cost').hide();
+
 });

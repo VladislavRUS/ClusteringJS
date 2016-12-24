@@ -57,11 +57,11 @@ function componentsContainEmptyCluster(components) {
 
 function clusterLoop(data, volumes, stations, params) {
     var distances = [];
-    var defaultNumberOfClusters = 60;
+    var defaultNumberOfClusters = 50;
     var componentsArr = [];
 
     if (params.clustersNumber == "") {
-        for (var i = 2; i < defaultNumberOfClusters; i++) {
+        for (var i = 5; i < defaultNumberOfClusters; i++) {
             var components = getComponentsFromKMeans(i, data, JSON.parse(JSON.stringify(volumes)));
             if (!componentsContainEmptyCluster(components)) {
                 componentsArr.push(components);
@@ -96,7 +96,7 @@ function clusterLoop(data, volumes, stations, params) {
 
     sendMessage('chart', JSON.stringify(distances));
 
-    var result = Util.findMinDistance(distances);
+    var result = Util.findMinDistance(distances, params);
 
     var components = componentsArr[result.idx];
 

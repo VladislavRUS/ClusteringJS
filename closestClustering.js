@@ -36,7 +36,7 @@ function startClosest(volumes, stations, params) {
 
     sendMessage('chart', JSON.stringify(distances));
 
-    var result = Util.findMinDistance(distances);
+    var result = Util.findMinDistance(distances,params);
 
     sendMessage('shortest', JSON.stringify(arr));
     sendMessage('Result', Util.prepareResult(result.min, params));

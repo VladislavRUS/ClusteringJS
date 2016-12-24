@@ -15,11 +15,11 @@ var ctx = canvas.getContext('2d');
 var shiftX = 5000;
 var shiftY = 5300;
 
-function getCostAndClustersNumber() {
+function getParams() {
     return {
         clustersNumber: document.getElementById('clustersNumber').value,
         stationCost: document.getElementById('stationCost').value,
-        kmCost: document.getElementById('kmCost').value
+        criteria: document.getElementById('index').checked
     }
 }
 
@@ -30,7 +30,7 @@ function startTree() {
     worker.postMessage({
         volumes: JSON.parse(JSON.stringify(volumes)),
         stations: JSON.parse(JSON.stringify(stations)),
-        params: getCostAndClustersNumber()
+        params: getParams()
     });
 }
 
@@ -41,7 +41,7 @@ function startKMeans() {
     kMeansWorker.postMessage({
         volumes: JSON.parse(JSON.stringify(volumes)),
         stations: JSON.parse(JSON.stringify(stations)),
-        params: getCostAndClustersNumber()
+        params: getParams()
     });
 }
 
@@ -52,7 +52,7 @@ function startClosest() {
     closestWorker.postMessage({
         volumes: JSON.parse(JSON.stringify(volumes)),
         stations: JSON.parse(JSON.stringify(stations)),
-        params: getCostAndClustersNumber()
+        params: getParams()
     });
 }
 
@@ -154,7 +154,7 @@ function processEvent(event) {
 
             drawText(ctx, {x: 400 + shiftX, y: 70 + shiftY}, 'Алгоритм: ' + "'" + algorithm + "'", {font: '30px Verdana'});
             drawText(ctx, {x: 400 + shiftX, y: 100 + shiftY}, 'Количество кластеров: ' + components.length, {font: '20px Verdana'});
-            var params = getCostAndClustersNumber();
+            var params = getParams();
             //drawText(ctx, {x: 400 + shiftX, y: 130 + shiftY}, 'Параметры: цена станции - ' + params.stationCost + ', количество заданных кластеров - ' + params.clustersNumber, {font: '20px Verdana'});
             drawText(ctx, {x: 400 + shiftX, y: 130 + shiftY}, 'Параметры: количество заданных кластеров - ' + params.clustersNumber, {font: '20px Verdana'});
 
@@ -166,16 +166,16 @@ function processEvent(event) {
             var betweenCenters = {
                 x: [],
                 y: [],
-                name: 'Среднее между центрами'
+                name: 'Среднее расстояние между центрами'
             };
 
             var inCluster = {
                 x: [],
                 y: [],
-                name: 'Среднее внутри кластеров'
+                name: 'Среднее внутрикластерное расстояние'
             };
 
-            var cost = {
+            var idx = {
                 x: [],
                 y: [],
                 name: 'Индекс ДБ * 100'
@@ -199,22 +199,10 @@ function processEvent(event) {
                 name: 'Индекс'
             };
 
-            var averageInAverage = {
+            var cost = {
                 x: [],
                 y: [],
-                name: 'Среднее по средним'
-            };
-
-            var averageInClusterK = {
-                x: [],
-                y: [],
-                name: 'Среднее с умножением на К'
-            };
-
-            var averageInClusterN = {
-                x: [],
-                y: [],
-                name: 'Среднее с умножением на среднее кол-во точек в кластере'
+                name: 'Стоимость'
             };
 
             for (var i = 0; i < distances.length; i++) {
@@ -224,8 +212,8 @@ function processEvent(event) {
                 inCluster.x.push(distances[i].numberOfClusters);
                 inCluster.y.push(distances[i].averageInCluster);
 
-                cost.x.push(distances[i].numberOfClusters);
-                cost.y.push(distances[i].idx * 100);
+                idx.x.push(distances[i].numberOfClusters);
+                idx.y.push(distances[i].idx * 100);
 
                 sumDistance.x.push(distances[i].numberOfClusters);
                 sumDistance.y.push(distances[i].sumDistance);
@@ -236,23 +224,17 @@ function processEvent(event) {
                 idxOnly.x.push(distances[i].numberOfClusters);
                 idxOnly.y.push(distances[i].idx);
 
-                averageInAverage.x.push(distances[i].numberOfClusters);
-                averageInAverage.y.push(distances[i].averageInAverage);
-
-                averageInClusterK.x.push(distances[i].numberOfClusters);
-                averageInClusterK.y.push(distances[i].averageInCluster * distances[i].numberOfClusters);
-
-                averageInClusterN.x.push(distances[i].numberOfClusters);
-                averageInClusterN.y.push(distances[i].averageInCluster * distances[i].averageN);
+                cost.x.push(distances[i].numberOfClusters);
+                cost.y.push(distances[i].cost);
             }
 
             var layout = {
                 xaxis: {title: 'Количество кластеров'},
                 yaxis: {title: 'Расстояние'},
-                title: 'Исходные данные'
+                title: 'Характерстики кластеризации'
             };
 
-            Plotly.newPlot('chart', [betweenCenters, inCluster, cost], layout);
+            Plotly.newPlot('chart', [betweenCenters, inCluster, idx], layout);
 
             var layout1 = {
                 xaxis: {title: 'Количество кластеров'},
@@ -279,24 +261,9 @@ function processEvent(event) {
             var layout4 = {
                 xaxis: {title: 'Количество кластеров'},
                 yaxis: {title: 'Расстояние'},
-                title: 'Среднее по средним'
+                title: 'Стоимость'
             };
-            Plotly.newPlot('averageInAverage', [averageInAverage], layout4);
-
-            var layout6 = {
-                xaxis: {title: 'Количество кластеров'},
-                yaxis: {title: 'Расстояние'},
-                title: 'Среднее в кластере с умножением на кол-во кластеров'
-            };
-            Plotly.newPlot('averageInClusterK', [averageInClusterK], layout6);
-
-            var layout7 = {
-                xaxis: {title: 'Количество кластеров'},
-                yaxis: {title: 'Расстояние'},
-                title: 'Среднее в кластере с умножением на среднее на кол-во точек'
-            };
-            Plotly.newPlot('averageInClusterN', [averageInClusterN], layout7);
-
+            Plotly.newPlot('cost', [cost], layout4);
             break;
         }
         case 'Result': {
@@ -322,6 +289,29 @@ function processEvent(event) {
         }
     }
 }
+
+function interpolate(trace) {
+    var arrX = trace.x;
+    var arrY = trace.y;
+
+    trace.x = arrX;
+    trace.y = arrY;
+
+    return trace;
+}
+
+function interpolateArr(arr) {
+    var treshold = 5;
+    for (var i = 1; i < arr.length; i++) {
+        var left = -1, right = -1;
+
+        if (i < treshold) {
+            left = 0;
+            right = 5;
+        }
+    }
+}
+
 
 function drawCircle(ctx, point, params) {
     ctx.beginPath();

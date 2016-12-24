@@ -106,7 +106,7 @@ function work(volumes, stations, params) {
     var distances = [];
 
     if (params.clustersNumber == "") {
-        for (var i = 0; i < 30; i++) {
+        for (var i = 5; i < 30; i++) {
             var matrixCopy = JSON.parse(JSON.stringify(matrix));
             removeLongestEdge(i, matrixCopy);
 
@@ -128,7 +128,7 @@ function work(volumes, stations, params) {
 
     sendMessage('chart', JSON.stringify(distances));
 
-    var result = Util.findMinDistance(distances);
+    var result = Util.findMinDistance(distances, params);
 
     removeLongestEdge(result.min.numberOfClusters - 1, matrix);
     var components = findComponents(matrix, volumes);
