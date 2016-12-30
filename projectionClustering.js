@@ -11,9 +11,17 @@ function startProjection(volumes, stations, params) {
     var componentsArr = [];
     var distances = [];
 
+    if (params.clustersNumber == "") {
+        for (var i = 5; i < 50; i++) {
+            var components = Util.projection(i, volumes, stations);
+            componentsArr.push(components);
+            var result = Util.countComponentsDistance(components, volumes, stations, params);
+            distances.push(result);
+        }
 
-    for (var i = 5; i < 50; i++) {
-        var components = Util.projection(i, volumes, stations);
+    } else {
+        var clustersNumber = Util.getNumber(params.clustersNumber);
+        var components = Util.projection(clustersNumber, volumes, stations);
         componentsArr.push(components);
         var result = Util.countComponentsDistance(components, volumes, stations, params);
         distances.push(result);

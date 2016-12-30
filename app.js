@@ -176,6 +176,8 @@ function processEvent(event) {
 
         case 'chart': {
             var distances = JSON.parse(event.data.text);
+            sort(distances);
+
             var betweenCenters = {
                 x: [],
                 y: [],
@@ -298,6 +300,18 @@ function processEvent(event) {
             else if (event.data.msg == 'distance') {
                 var percent = ((event.data.first) * 50 / event.data.last) + 50;
                 $('.determinate').width(percent + '%');
+            }
+        }
+    }
+}
+
+function sort(arr) {
+    for (var i = 0; i < arr.length; i++) {
+        for (var j = 0; j < arr.length; j++) {
+            if (arr[j].numberOfClusters < arr[i].numberOfClusters) {
+                var v = JSON.parse(JSON.stringify(arr[i]));
+                arr[i] = JSON.parse(JSON.stringify(arr[j]));
+                arr[j] = v;
             }
         }
     }
