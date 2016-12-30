@@ -1,6 +1,7 @@
 var worker = new Worker('treeClustering.js');
 var kMeansWorker = new Worker('kMeansClustering.js');
 var closestWorker = new Worker('closestClustering.js');
+var projectionWorker = new Worker('projectionClustering.js');
 
 var info = document.getElementById('info');
 var mapStations = [];
@@ -56,6 +57,17 @@ function startClosest() {
     });
 }
 
+function startProjection() {
+    algorithm = 'Кластеризация с проектированием';
+
+    clearCanvas();
+    projectionWorker.postMessage({
+        volumes: JSON.parse(JSON.stringify(volumes)),
+        stations: JSON.parse(JSON.stringify(stations)),
+        params: getParams()
+    });
+}
+
 function clearCanvas() {
     mapStations.length = 0;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -63,7 +75,7 @@ function clearCanvas() {
     ctx.rect(0, 0, canvas.width, canvas.height);
 }
 
-[worker, kMeansWorker, closestWorker].forEach(function (w) {
+[worker, kMeansWorker, closestWorker, projectionWorker].forEach(function (w) {
     w.onmessage = processEvent;
 });
 
@@ -128,6 +140,7 @@ function showMap() {
 function processEvent(event) {
     switch (event.data.msg) {
         case 'tree':
+        case 'projection':
         case 'shortest':
         case 'kmeans': {
             var components = JSON.parse(event.data.text);

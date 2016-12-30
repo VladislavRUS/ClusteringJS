@@ -19,6 +19,68 @@ var Util = {
         }
     },
 
+    projection: function(k, volumes, stations) {
+        var self = this;
+
+        var randomStationsIdx = [];
+
+        console.log('0');
+        console.log('Length: ' + stations.length);
+        for (var i = 0; i < k; i++) {
+            randomStationsIdx.push(Math.floor(Math.random() * (stations.length - 1 - i) + i));
+        }
+        randomStationsIdx.forEach(function(idx) {
+            console.log(idx)
+        });
+
+        var componentObject = {};
+
+        for (var i = 0; i < randomStationsIdx.length; i++) {
+            componentObject[randomStationsIdx[i]] = {};
+            componentObject[randomStationsIdx[i]].points = [];
+        }
+
+        var randomStations = [];
+        for (var i = 0; i < randomStationsIdx.length; i++) {
+            randomStations.push(stations[randomStationsIdx[i]]);
+        }
+
+        for (var i = 0; i < volumes.length; i++) {
+            var point = volumes[i];
+            var idx = self.findClosestStationForComponentCenter(point, randomStations);
+            componentObject[randomStationsIdx[idx]].points.push(point);
+        }
+
+        for (var prop in componentObject) {
+            if (componentObject.hasOwnProperty(prop)) {
+                if (componentObject[prop].points.length == 0) {
+                    delete componentObject[prop];
+                }
+            }
+        }
+
+        var components = [];
+        for (var prop in componentObject) {
+            if (componentObject.hasOwnProperty(prop)) {
+                var component = {};
+                component.points = [];
+
+                for (var i = 0; i < componentObject[prop].points.length; i++) {
+                    var p = componentObject[prop].points[i];
+                    component.points.push(p);
+                }
+
+                component.center = self.findComponentCenter(component);
+                component.station = stations[prop];
+
+                components.push(component);
+            }
+        }
+
+        console.log(components);
+        return components;
+    },
+
     countCost: function(components, stations, cost) {
         var self = this;
         var sumDistance = 0;
@@ -45,7 +107,7 @@ var Util = {
 
         console.log('Stations unique: ' + uniqueStations.length);
 
-        return sumDistance * 1 + uniqueStations.length * cost;
+        return sumDistance + uniqueStations.length * cost;
     },
 
     countSumDistanceWithSize: function (components) {

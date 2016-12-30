@@ -26,6 +26,16 @@ $(function() {
         startKMeans();
     });
 
+    $('#projection').click(function() {
+        $('#buttons-block').hide();
+        $('#optimizations').hide();
+        $('.determinate').width('0%');
+        $('#info').show();
+
+        $('#progress-bar').show();
+        startProjection();
+    });
+
     $('#closest').click(function() {
         $('#buttons-block').hide();
         $('#optimizations').hide();
